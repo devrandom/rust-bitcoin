@@ -18,9 +18,13 @@
 //! network addresses in Bitcoin messages.
 //!
 
-use std::{fmt, io, iter};
 use std::net::{SocketAddr, Ipv6Addr, SocketAddrV4, SocketAddrV6, Ipv4Addr, ToSocketAddrs};
 
+use Vec;
+use core::{fmt, iter};
+use Write;
+
+use io;
 use network::constants::ServiceFlags;
 use consensus::encode::{self, Decodable, Encodable, VarInt, ReadExt, WriteExt};
 
@@ -74,7 +78,7 @@ fn addr_to_be(addr: [u16; 8]) -> [u16; 8] {
 
 impl Encodable for Address {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -136,8 +140,8 @@ pub enum AddrV2 {
 }
 
 impl Encodable for AddrV2 {
-    fn consensus_encode<W: io::Write>(&self, e: W) -> Result<usize, io::Error> {
-        fn encode_addr<W: io::Write>(mut e: W, network: u8, bytes: &[u8]) -> Result<usize, io::Error> {
+    fn consensus_encode<W: Write>(&self, e: W) -> Result<usize, io::Error> {
+        fn encode_addr<W: Write>(mut e: W, network: u8, bytes: &[u8]) -> Result<usize, io::Error> {
                 let len = 
                     network.consensus_encode(&mut e)? +
                     VarInt(bytes.len() as u64).consensus_encode(&mut e)? +
@@ -261,7 +265,7 @@ impl AddrV2Message {
 }
 
 impl Encodable for AddrV2Message {
-    fn consensus_encode<W: io::Write>(&self, mut e: W) -> Result<usize, io::Error> {
+    fn consensus_encode<W: Write>(&self, mut e: W) -> Result<usize, io::Error> {
         let mut len = 0;
         len += self.time.consensus_encode(&mut e)?;
         len += VarInt(self.services.as_u64()).consensus_encode(&mut e)?;
@@ -291,7 +295,7 @@ impl ToSocketAddrs for AddrV2Message {
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
+    use core::str::FromStr;
     use super::{AddrV2Message, AddrV2, Address};
     use network::constants::ServiceFlags;
     use std::net::{SocketAddr, IpAddr, Ipv4Addr, Ipv6Addr};

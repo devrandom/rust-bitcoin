@@ -16,7 +16,11 @@
 //!
 //! Various utility functions
 
+use {Vec, String};
+
 use hashes::{sha256d, Hash, HashEngine};
+
+#[cfg(any(feature = "bare-io"))] use hashes::sha256;
 
 use blockdata::opcodes;
 use consensus::{encode, Encodable};
@@ -29,7 +33,8 @@ pub const BITCOIN_SIGNED_MSG_PREFIX: &[u8] = b"\x18Bitcoin Signed Message:\n";
 
 #[cfg(feature = "secp-recovery")]
 mod message_signing {
-    use std::{error, fmt};
+    use core::fmt;
+    use std::error;
 
     use hashes::sha256d;
     use secp256k1;
@@ -59,6 +64,7 @@ mod message_signing {
         }
     }
 
+    #[cfg(feature = "std")]
     impl error::Error for MessageSignatureError {
         fn cause(&self) -> Option<&dyn error::Error> {
             match *self {
@@ -188,7 +194,7 @@ mod message_signing {
     }
 
     #[cfg(feature = "base64")]
-    impl ::std::str::FromStr for MessageSignature {
+    impl ::core::str::FromStr for MessageSignature {
         type Err = MessageSignatureError;
         fn from_str(s: &str) -> Result<MessageSignature, MessageSignatureError> {
             MessageSignature::from_base64(s)
@@ -241,8 +247,36 @@ pub fn signed_msg_hash(msg: &str) -> sha256d::Hash {
     sha256d::Hash::from_engine(engine)
 }
 
+/// Cribbed from bitcoin_hashes::hex, because it is not exported if std is off, but is still usable with core
+pub trait ToHex {
+    /// Hex representation of the object
+    fn to_hex(&self) -> String;
+}
+
+impl ToHex for [u8] {
+    fn to_hex(&self) -> String {
+        use core::fmt::Write;
+        let mut ret = String::with_capacity(2 * self.len());
+        for ch in self {
+            write!(ret, "{:02x}", ch).expect("writing to string");
+        }
+        ret
+    }
+}
+
+#[cfg(feature = "bare-io")]
+impl Write for sha256::HashEngine {
+    fn flush(&mut self) -> crate::io::Result<()> { Ok(()) }
+
+    fn write(&mut self, buf: &[u8]) -> crate::io::Result<usize> {
+        self.input(buf);
+        Ok(buf.len())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use Vec;
     use hashes::hex::ToHex;
     use super::script_find_and_remove;
     use super::signed_msg_hash;
@@ -295,7 +329,7 @@ mod tests {
     #[test]
     #[cfg(all(feature = "secp-recovery", feature = "base64"))]
     fn test_message_signature() {
-        use std::str::FromStr;
+        use core::str::FromStr;
         use secp256k1;
 
         let secp = secp256k1::Secp256k1::new();

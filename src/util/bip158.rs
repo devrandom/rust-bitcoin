@@ -44,13 +44,13 @@
 //!
 //!
 
-use std::{cmp, fmt, io};
-use std::collections::HashSet;
-use std::error;
-use std::fmt::{Display, Formatter};
-use std::io::Cursor;
-use std::cmp::Ordering;
+use HashSet;
 
+use io::{self as io, Cursor};
+use core::fmt::{self, Display, Formatter};
+use core::cmp::{self, Ordering};
+use Vec;
+use Write;
 
 use hashes::{Hash, siphash24};
 use hash_types::{BlockHash, FilterHash, FilterHeader};
@@ -75,7 +75,8 @@ pub enum Error {
     Io(io::Error),
 }
 
-impl error::Error for Error {}
+#[cfg(feature = "std")]
+impl ::std::error::Error for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
@@ -125,14 +126,14 @@ impl BlockFilter {
     /// Compute a SCRIPT_FILTER that contains spent and output scripts
     pub fn new_script_filter<M>(block: &Block, script_for_coin: M) -> Result<BlockFilter, Error>
         where M: Fn(&OutPoint) -> Result<Script, Error> {
-        let mut out = Cursor::new(Vec::new());
+        let mut out = Vec::new();
         {
             let mut writer = BlockFilterWriter::new(&mut out, block);
             writer.add_output_scripts();
             writer.add_input_scripts(script_for_coin)?;
             writer.finish()?;
         }
-        Ok(BlockFilter { content: out.into_inner() })
+        Ok(BlockFilter { content: out })
     }
 
     /// match any query pattern
@@ -156,7 +157,7 @@ pub struct BlockFilterWriter<'a> {
 
 impl<'a> BlockFilterWriter<'a> {
     /// Create a block filter writer
-    pub fn new(writer: &'a mut dyn io::Write, block: &'a Block) -> BlockFilterWriter<'a> {
+    pub fn new(writer: &'a mut dyn Write, block: &'a Block) -> BlockFilterWriter<'a> {
         let block_hash_as_int = block.block_hash().into_inner();
         let k0 = endian::slice_to_u64_le(&block_hash_as_int[0..8]);
         let k1 = endian::slice_to_u64_le(&block_hash_as_int[8..16]);
@@ -330,14 +331,14 @@ fn map_to_range(hash: u64, nm: u64) -> u64 {
 /// Colomb-Rice encoded filter writer
 pub struct GCSFilterWriter<'a> {
     filter: GCSFilter,
-    writer: &'a mut dyn io::Write,
+    writer: &'a mut dyn Write,
     elements: HashSet<Vec<u8>>,
     m: u64
 }
 
 impl<'a> GCSFilterWriter<'a> {
     /// Create a new GCS writer wrapping a generic writer, with specific seed to siphash
-    pub fn new(writer: &'a mut dyn io::Write, k0: u64, k1: u64, m: u64, p: u8) -> GCSFilterWriter<'a> {
+    pub fn new(writer: &'a mut dyn Write, k0: u64, k1: u64, m: u64, p: u8) -> GCSFilterWriter<'a> {
         GCSFilterWriter {
             filter: GCSFilter::new(k0, k1, p),
             writer,
@@ -363,9 +364,9 @@ impl<'a> GCSFilterWriter<'a> {
         mapped.sort();
 
         // write number of elements as varint
-        let mut encoder = io::Cursor::new(Vec::new());
+        let mut encoder = Vec::new();
         VarInt(mapped.len() as u64).consensus_encode(&mut encoder).unwrap();
-        let mut wrote = self.writer.write(encoder.into_inner().as_slice())?;
+        let mut wrote = self.writer.write(encoder.as_slice())?;
 
         // write out deltas of sorted values into a Golonb-Rice coded bit stream
         let mut writer = BitStreamWriter::new(self.writer);
@@ -464,12 +465,12 @@ impl<'a> BitStreamReader<'a> {
 pub struct BitStreamWriter<'a> {
     buffer: [u8; 1],
     offset: u8,
-    writer: &'a mut dyn io::Write,
+    writer: &'a mut dyn Write,
 }
 
 impl<'a> BitStreamWriter<'a> {
     /// Create a new BitStreamWriter that writes bitwise to a given writer
-    pub fn new(writer: &'a mut dyn io::Write) -> BitStreamWriter {
+    pub fn new(writer: &'a mut dyn Write) -> BitStreamWriter {
         BitStreamWriter {
             buffer: [0u8],
             writer: writer,
@@ -510,8 +511,7 @@ impl<'a> BitStreamWriter<'a> {
 
 #[cfg(test)]
 mod test {
-    use std::collections::{HashSet, HashMap};
-    use std::io::Cursor;
+    use io::Cursor;
 
     use hash_types::BlockHash;
     use hashes::hex::FromHex;
@@ -522,6 +522,7 @@ mod test {
     use self::serde_json::{Value};
 
     use consensus::encode::deserialize;
+    use std::collections::HashMap;
 
     #[test]
     fn test_blockfilters() {
@@ -609,7 +610,7 @@ mod test {
         patterns.insert(Vec::from_hex("eeeeee").unwrap());
         patterns.insert(Vec::from_hex("ffffff").unwrap());
 
-        let mut out = Cursor::new(Vec::new());
+        let mut out = Vec::new();
         {
             let mut writer = GCSFilterWriter::new(&mut out, 0, 0, M, P);
             for p in &patterns {
@@ -618,7 +619,7 @@ mod test {
             writer.finish().unwrap();
         }
 
-        let bytes = out.into_inner();
+        let bytes = out;
 
         {
             let mut query = Vec::new();
@@ -661,7 +662,7 @@ mod test {
 
     #[test]
     fn test_bit_stream() {
-        let mut out = Cursor::new(Vec::new());
+        let mut out = Vec::new();
         {
             let mut writer = BitStreamWriter::new(&mut out);
             writer.write(0, 1).unwrap(); // 0
@@ -673,7 +674,7 @@ mod test {
             writer.write(7, 7).unwrap(); // 0000111
             writer.flush().unwrap();
         }
-        let bytes = out.into_inner();
+        let bytes = out;
         assert_eq!("01011010110000110000000001110000", format!("{:08b}{:08b}{:08b}{:08b}", bytes[0], bytes[1], bytes[2], bytes[3]));
         {
             let mut input = Cursor::new(bytes);

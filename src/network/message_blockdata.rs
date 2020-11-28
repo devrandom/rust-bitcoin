@@ -18,7 +18,9 @@
 //! Bitcoin data (blocks and transactions) around.
 //!
 
-use std::io;
+use Vec;
+use io;
+use Write;
 
 use hashes::sha256d;
 
@@ -52,7 +54,7 @@ pub enum Inventory {
 
 impl Encodable for Inventory {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -149,12 +151,12 @@ impl_consensus_encoding!(GetHeadersMessage, version, locator_hashes, stop_hash);
 
 #[cfg(test)]
 mod tests {
-    use super::{GetHeadersMessage, GetBlocksMessage};
+    use super::{Vec, GetHeadersMessage, GetBlocksMessage};
 
     use hashes::hex::FromHex;
 
     use consensus::encode::{deserialize, serialize};
-    use std::default::Default;
+    use core::default::Default;
 
     #[test]
     fn getblocks_message_test() {

@@ -22,7 +22,7 @@
 
 #[cfg(feature = "serde")] use serde;
 
-use std::fmt;
+use core::{fmt, convert::From};
 
 // Note: I am deliberately not implementing PartialOrd or Ord on the
 //       opcode enum. If you want to check ranges of opcodes, etc.,
@@ -816,9 +816,9 @@ impl Ordinary {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
 
     use super::*;
+    use std::collections::HashSet;
 
     macro_rules! roundtrip {
         ($unique:expr, $op:ident) => {

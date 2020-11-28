@@ -15,8 +15,9 @@
 //!
 //! Utility functions related to hashing data, including merkleization
 
-use std::cmp::min;
-use std::io;
+use Vec;
+use Write;
+use core::cmp::min;
 
 use hashes::Hash;
 use consensus::encode::Encodable;
@@ -27,7 +28,7 @@ use consensus::encode::Encodable;
 /// In most cases, you'll want to use [bitcoin_merkle_root] instead.
 pub fn bitcoin_merkle_root_inline<T>(data: &mut [T]) -> T
     where T: Hash + Encodable,
-          <T as Hash>::Engine: io::Write,
+          <T as Hash>::Engine: Write,
 {
     // Base case
     if data.is_empty() {
@@ -52,7 +53,7 @@ pub fn bitcoin_merkle_root_inline<T>(data: &mut [T]) -> T
 /// Calculates the merkle root of an iterator of hashes.
 pub fn bitcoin_merkle_root<T, I>(mut iter: I) -> T
     where T: Hash + Encodable,
-          <T as Hash>::Engine: io::Write,
+          <T as Hash>::Engine: Write,
           I: ExactSizeIterator<Item = T>,
 {
     // Base case

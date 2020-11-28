@@ -18,19 +18,20 @@
 //! of Bitcoin data and network messages.
 //!
 
-use std::fmt;
-use std::io;
-use std::error;
+use io;
+use core::fmt;
+#[cfg(feature = "std")] use std::error;
 
 pub mod constants;
 
-pub mod address;
-pub use self::address::Address;
-pub mod message;
-pub mod message_blockdata;
-pub mod message_network;
-pub mod message_filter;
-pub mod stream_reader;
+// FIXME: put the networking stuff behind std feature
+#[cfg(feature = "std")] pub mod address;
+#[cfg(feature = "std")] pub use self::address::Address;
+#[cfg(feature = "std")] pub mod message;
+#[cfg(feature = "std")] pub mod message_blockdata;
+#[cfg(feature = "std")] pub mod message_network;
+#[cfg(feature = "std")] pub mod message_filter;
+#[cfg(feature = "std")] pub mod stream_reader;
 
 /// Network error
 #[derive(Debug)]
@@ -60,8 +61,8 @@ impl From<io::Error> for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl error::Error for Error {
-
     fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             Error::Io(ref e) => Some(e),

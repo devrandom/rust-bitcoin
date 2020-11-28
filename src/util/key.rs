@@ -19,8 +19,8 @@
 #[deprecated(since = "0.26.1", note = "Please use `util::ecdsa` instead")]
 pub use util::ecdsa::{PrivateKey, PublicKey};
 
-use std::fmt;
-use std::error;
+use core::fmt;
+#[cfg(feature = "std")] use std::error;
 
 use secp256k1;
 use util::base58;
@@ -44,7 +44,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
+#[cfg(feature = "std")]
+impl ::std::error::Error for Error {
     fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             Error::Base58(ref e) => Some(e),

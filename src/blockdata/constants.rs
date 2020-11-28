@@ -19,9 +19,10 @@
 //! single transaction
 //!
 
-use std::default::Default;
+use core::default::Default;
+use Vec;
 
-use hashes::hex::FromHex;
+use hashes::hex::{HexIterator, Error as HexError};
 use hashes::sha256d;
 use blockdata::opcodes;
 use blockdata::script;
@@ -83,8 +84,11 @@ fn bitcoin_genesis_tx() -> Transaction {
     });
 
     // Outputs
+    let script_bytes: Result<Vec<u8>, HexError> =
+        HexIterator::new("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f").unwrap()
+            .collect();
     let out_script = script::Builder::new()
-        .push_slice(&Vec::from_hex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f").unwrap())
+        .push_slice(script_bytes.unwrap().as_slice())
         .push_opcode(opcodes::all::OP_CHECKSIG)
         .into_script();
     ret.output.push(TxOut {
@@ -159,7 +163,7 @@ pub fn genesis_block(network: Network) -> Block {
 
 #[cfg(test)]
 mod test {
-    use std::default::Default;
+    use core::default::Default;
     use hashes::hex::FromHex;
 
     use network::constants::Network;

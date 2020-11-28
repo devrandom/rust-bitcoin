@@ -18,8 +18,9 @@
 //! capabilities
 //!
 
-use std::io;
-use std::borrow::Cow;
+use io;
+use {Cow, String};
+use Write;
 
 use network::address::Address;
 use network::constants::{self, ServiceFlags};
@@ -106,7 +107,7 @@ pub enum RejectReason {
 }
 
 impl Encodable for RejectReason {
-    fn consensus_encode<W: io::Write>(&self, mut e: W) -> Result<usize, io::Error> {
+    fn consensus_encode<W: Write>(&self, mut e: W) -> Result<usize, io::Error> {
         e.write_all(&[*self as u8])?;
         Ok(1)
     }
@@ -148,6 +149,7 @@ mod tests {
     use super::VersionMessage;
 
     use hashes::hex::FromHex;
+    use Vec;
     use network::constants::ServiceFlags;
 
     use consensus::encode::{deserialize, serialize};

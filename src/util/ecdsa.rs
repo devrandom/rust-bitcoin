@@ -16,9 +16,13 @@
 //! ECDSA keys used in Bitcoin that can be roundtrip (de)serialized.
 //!
 
-use std::fmt::{self, Write};
-use std::{io, ops};
-use std::str::FromStr;
+use core::fmt;
+use core::fmt::Write as _fmtWrite;
+use core::ops;
+use core::str::FromStr;
+use io;
+use {Vec, String};
+use Write;
 
 use secp256k1::{self, Secp256k1};
 use network::constants::Network;
@@ -77,7 +81,7 @@ impl PublicKey {
     }
 
     /// Write the public key into a writer
-    pub fn write_into<W: io::Write>(&self, mut writer: W) -> Result<(), io::Error> {
+    pub fn write_into<W: Write>(&self, mut writer: W) -> Result<(), io::Error> {
         if self.compressed {
             writer.write_all(&self.key.serialize())
         } else {
@@ -100,7 +104,10 @@ impl PublicKey {
         };
 
         reader.read_exact(&mut bytes[1..])?;
-        Self::from_slice(bytes).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        Self::from_slice(bytes).map_err(|e|{
+            let err_string = format!("{}", e);
+            io::Error::new(io::ErrorKind::InvalidData, err_string.as_str())
+        })
     }
 
     /// Serialize the public key to bytes
@@ -398,9 +405,9 @@ impl<'de> ::serde::Deserialize<'de> for PublicKey {
 
 #[cfg(test)]
 mod tests {
+    use io;
     use super::{PrivateKey, PublicKey};
     use secp256k1::Secp256k1;
-    use std::io;
     use std::str::FromStr;
     use hashes::hex::ToHex;
     use network::constants::Network::Testnet;

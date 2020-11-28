@@ -23,6 +23,8 @@
 //! software.
 //!
 
+#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
+
 // Experimental features we need
 #![cfg_attr(all(test, feature = "unstable"), feature(test))]
 
@@ -38,10 +40,30 @@
 #![deny(unused_must_use)]
 #![deny(broken_intra_doc_links)]
 
+#[cfg(all(not(feature = "std"), not(test)))]
+#[macro_use]
+pub extern crate alloc;
+#[cfg(feature = "std")] pub extern crate core; // for Rust 1.29
+
+#[cfg(all(not(feature = "std"), not(test)))]
+use alloc::{string::{String, ToString}, vec::Vec, boxed::Box, borrow::{Cow, ToOwned}, slice, rc, sync};
+
+#[cfg(any(feature = "std", test))]
+use std::{string::{String, ToString}, vec::Vec, boxed::Box, borrow::{Cow, ToOwned}, slice, rc, sync};
+
+#[cfg(all(not(feature = "std"), not(test)))]
+use alloc::collections::{BTreeMap, BTreeSet, btree_map};
+
+#[cfg(any(feature = "std", test))]
+use std::collections::{BTreeMap, btree_map};
+
 // Re-exported dependencies.
 #[macro_use] pub extern crate bitcoin_hashes as hashes;
 pub extern crate secp256k1;
 pub extern crate bech32;
+pub extern crate hashbrown;
+
+#[cfg(feature = "bare-io")] pub extern crate bare_io;
 #[cfg(feature = "base64")] pub extern crate base64;
 
 #[cfg(feature="bitcoinconsensus")] extern crate bitcoinconsensus;
@@ -68,6 +90,7 @@ pub mod blockdata;
 pub mod util;
 pub mod consensus;
 pub mod hash_types;
+pub mod io;
 
 pub use hash_types::*;
 pub use blockdata::block::Block;
@@ -95,11 +118,19 @@ pub use util::ecdsa::PrivateKey;
 #[deprecated(since = "0.26.1", note = "Please use `ecdsa::PublicKey` instead")]
 pub use util::ecdsa::PublicKey;
 
+#[cfg(feature = "bare-io")]
+pub use io::encode::EncodingWrite as Write;
+
+#[cfg(any(feature = "std"))]
+pub use io::Write;
+
+use hashbrown::HashSet;
+
 #[cfg(all(test, feature = "unstable"))] use tests::EmptyWrite;
 
 #[cfg(all(test, feature = "unstable"))]
 mod tests {
-    use std::io::{IoSlice, Result, Write};
+    use io::{IoSlice, Result, Write};
     use std::fmt::Arguments;
 
     #[derive(Default, Clone, Debug, PartialEq, Eq)]

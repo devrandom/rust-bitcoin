@@ -24,17 +24,21 @@
 //! This module provides the structures and functions needed to support scripts.
 //!
 
-use std::default::Default;
-use std::{error, fmt, io, str};
+use io;
+
+use core::{fmt, default::Default};
+use {Box, Vec, String};
+use Write;
 
 #[cfg(feature = "serde")] use serde;
 
 use hash_types::{PubkeyHash, WPubkeyHash, ScriptHash, WScriptHash};
 use blockdata::opcodes;
 use consensus::{encode, Decodable, Encodable};
-use hashes::{Hash, hex};
+use hashes::Hash;
+#[cfg(feature = "std")] use hashes::hex;
 #[cfg(feature="bitcoinconsensus")] use bitcoinconsensus;
-#[cfg(feature="bitcoinconsensus")] use std::convert;
+#[cfg(feature="bitcoinconsensus")] use core::convert::From;
 #[cfg(feature="bitcoinconsensus")] use OutPoint;
 
 use util::ecdsa::PublicKey;
@@ -81,6 +85,7 @@ impl fmt::UpperHex for Script {
     }
 }
 
+#[cfg(feature = "std")]
 impl hex::FromHex for Script {
     fn from_byte_iter<I>(iter: I) -> Result<Self, hex::Error>
         where I: Iterator<Item=Result<u8, hex::Error>> +
@@ -90,7 +95,9 @@ impl hex::FromHex for Script {
         Vec::from_byte_iter(iter).map(|v| Script(Box::<[u8]>::from(v)))
     }
 }
-impl str::FromStr for Script {
+
+#[cfg(feature = "std")]
+impl ::std::str::FromStr for Script {
     type Err = hex::Error;
     fn from_str(s: &str) -> Result<Self, hex::Error> {
         hex::FromHex::from_hex(s)
@@ -142,11 +149,12 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {}
+#[cfg(feature = "std")]
+impl ::std::error::Error for Error {}
 
 #[cfg(feature="bitcoinconsensus")]
 #[doc(hidden)]
-impl convert::From<bitcoinconsensus::Error> for Error {
+impl From<bitcoinconsensus::Error> for Error {
     fn from(err: bitcoinconsensus::Error) -> Error {
         match err {
             _ => Error::BitcoinConsensus(err)
@@ -819,7 +827,7 @@ impl<'de> serde::Deserialize<'de> for Script {
     where
         D: serde::Deserializer<'de>,
     {
-        use std::fmt::Formatter;
+        use core::fmt::Formatter;
         use hashes::hex::FromHex;
 
         struct Visitor;
@@ -871,7 +879,7 @@ impl serde::Serialize for Script {
 // Network serialization
 impl Encodable for Script {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         s: S,
     ) -> Result<usize, io::Error> {
@@ -888,7 +896,7 @@ impl Decodable for Script {
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
+    use core::str::FromStr;
 
     use super::*;
     use super::build_scriptint;

@@ -33,9 +33,11 @@
 //! let address = Address::p2pkh(&public_key, Network::Bitcoin);
 //! ```
 
-use std::fmt;
-use std::str::FromStr;
-use std::error;
+use core::str::FromStr;
+// FIXME: Debug was giving a compiler error without std feature. Why? Is Error not used?
+use core::fmt;
+use {ToString, Vec};
+#[cfg(feature = "std")] use std::error;
 
 use bech32;
 use hashes::Hash;
@@ -44,6 +46,7 @@ use blockdata::script;
 use network::constants::Network;
 use util::base58;
 use util::ecdsa;
+use bech32::Variant::Bech32;
 
 /// Address error.
 #[derive(Debug, PartialEq)]
@@ -84,8 +87,9 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
-    fn cause(&self) -> Option<&dyn error::Error> {
+#[cfg(feature = "std")]
+impl ::std::error::Error for Error {
+    fn cause(&self) -> Option<&dyn  error::Error> {
         match *self {
             Error::Base58(ref e) => Some(e),
             Error::Bech32(ref e) => Some(e),
@@ -405,7 +409,7 @@ impl fmt::Display for Address {
                 } else {
                     fmt as &mut dyn fmt::Write
                 };
-                let mut bech32_writer = bech32::Bech32Writer::new(hrp, writer)?;
+                let mut bech32_writer = bech32::Bech32Writer::new(hrp, Bech32, writer)?;
                 bech32::WriteBase32::write_u5(&mut bech32_writer, ver)?;
                 bech32::ToBase32::write_base32(&prog, &mut bech32_writer)
             }
@@ -448,7 +452,7 @@ impl FromStr for Address {
         };
         if let Some(network) = bech32_network {
             // decode as bech32
-            let (_, payload) = bech32::decode(s)?;
+            let (_, payload, _) = bech32::decode(s)?;
             if payload.is_empty() {
                 return Err(Error::EmptyBech32Payload);
             }
@@ -517,16 +521,15 @@ impl FromStr for Address {
     }
 }
 
-impl ::std::fmt::Debug for Address {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+impl fmt::Debug for Address {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-    use std::string::ToString;
+    use core::str::FromStr;
 
     use hashes::hex::{FromHex, ToHex};
 

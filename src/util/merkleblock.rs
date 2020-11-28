@@ -52,8 +52,11 @@
 //! assert_eq!(1, index[0]);
 //! ```
 
-use std::collections::HashSet;
-use std::io;
+use HashSet;
+
+use io;
+use {String, Vec, ToOwned};
+use Write;
 
 use hashes::Hash;
 use hash_types::{Txid, TxMerkleNode};
@@ -347,7 +350,7 @@ impl PartialMerkleTree {
 }
 
 impl Encodable for PartialMerkleTree {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -475,7 +478,7 @@ impl MerkleBlock {
 }
 
 impl Encodable for MerkleBlock {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -496,7 +499,8 @@ impl Decodable for MerkleBlock {
 
 #[cfg(test)]
 mod tests {
-    use std::cmp::min;
+    use Vec;
+    use core::cmp::min;
 
     use hashes::Hash;
     use hashes::hex::{FromHex, ToHex};

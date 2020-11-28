@@ -23,7 +23,9 @@ use blockdata::transaction::Transaction;
 use consensus::{encode, Encodable, Decodable};
 use consensus::encode::MAX_VEC_SIZE;
 
-use std::io;
+use io;
+use Vec;
+use Write;
 
 mod error;
 pub use self::error::Error;
@@ -139,7 +141,7 @@ mod display_from_str {
 pub use self::display_from_str::PsbtParseError;
 
 impl Encodable for PartiallySignedTransaction {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -211,11 +213,11 @@ impl Decodable for PartiallySignedTransaction {
 
 #[cfg(test)]
 mod tests {
+    use Vec;
     use hashes::hex::FromHex;
     use hashes::{sha256, hash160, Hash, ripemd160};
     use hash_types::Txid;
 
-    use std::collections::BTreeMap;
 
     use secp256k1::Secp256k1;
 
@@ -230,6 +232,7 @@ mod tests {
 
     use super::PartiallySignedTransaction;
     use util::psbt::raw::ProprietaryKey;
+    use std::collections::BTreeMap;
 
     #[test]
     fn trivial_psbt() {
@@ -464,7 +467,7 @@ mod tests {
     }
 
     mod bip_vectors {
-        use std::collections::BTreeMap;
+        use Vec;
         #[cfg(feature = "base64")]
         use std::str::FromStr;
 
@@ -477,6 +480,7 @@ mod tests {
         use util::psbt::map::{Map, Global, Input, Output};
         use util::psbt::raw;
         use util::psbt::{PartiallySignedTransaction, Error};
+        use std::collections::BTreeMap;
 
         #[test]
         #[should_panic(expected = "InvalidMagic")]

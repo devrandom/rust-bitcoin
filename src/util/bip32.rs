@@ -16,9 +16,9 @@
 //! Implementation of BIP32 hierarchical deterministic wallets, as defined
 //! at <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki>
 
-use std::default::Default;
-use std::{error, fmt};
-use std::str::FromStr;
+use {String, Vec, slice};
+use core::{fmt, str::FromStr, default::Default};
+#[cfg(feature = "std")] use std::error;
 #[cfg(feature = "serde")] use serde;
 
 use hash_types::XpubIdentifier;
@@ -267,15 +267,15 @@ impl<'a> From<&'a [ChildNumber]> for DerivationPath {
     }
 }
 
-impl ::std::iter::FromIterator<ChildNumber> for DerivationPath {
+impl ::core::iter::FromIterator<ChildNumber> for DerivationPath {
     fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = ChildNumber> {
         DerivationPath(Vec::from_iter(iter))
     }
 }
 
-impl<'a> ::std::iter::IntoIterator for &'a DerivationPath {
+impl<'a> ::core::iter::IntoIterator for &'a DerivationPath {
     type Item = &'a ChildNumber;
-    type IntoIter = ::std::slice::Iter<'a, ChildNumber>;
+    type IntoIter = slice::Iter<'a, ChildNumber>;
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
     }
@@ -461,8 +461,9 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
-    fn cause(&self) -> Option<&dyn error::Error> {
+#[cfg(feature = "std")]
+impl ::std::error::Error for Error {
+    fn cause(&self) -> Option<&dyn  error::Error> {
        if let Error::Ecdsa(ref e) = *self {
            Some(e)
        } else {
@@ -770,8 +771,7 @@ mod tests {
     use super::*;
     use super::ChildNumber::{Hardened, Normal};
 
-    use std::str::FromStr;
-    use std::string::ToString;
+    use core::str::FromStr;
 
     use secp256k1::{self, Secp256k1};
     use hashes::hex::FromHex;

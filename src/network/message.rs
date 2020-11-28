@@ -19,10 +19,11 @@
 //! also defines (de)serialization routines for many primitives.
 //!
 
-use std::{fmt, io, iter, mem, str};
-use std::borrow::Cow;
-use std::io::Cursor;
+use {Cow, Vec};
+use core::{mem, fmt, iter};
+use Write;
 
+use io;
 use blockdata::block;
 use blockdata::transaction;
 use network::address::{Address, AddrV2Message};
@@ -74,7 +75,7 @@ impl AsRef<str> for CommandString {
 
 impl Encodable for CommandString {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         s: S,
     ) -> Result<usize, io::Error> {
@@ -251,7 +252,7 @@ struct HeaderSerializationWrapper<'a>(&'a Vec<block::BlockHeader>);
 
 impl<'a> Encodable for HeaderSerializationWrapper<'a> {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -266,7 +267,7 @@ impl<'a> Encodable for HeaderSerializationWrapper<'a> {
 }
 
 impl Encodable for RawNetworkMessage {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -337,7 +338,7 @@ impl Decodable for RawNetworkMessage {
         let cmd = CommandString::consensus_decode(&mut d)?;
         let raw_payload = CheckedData::consensus_decode(&mut d)?.0;
 
-        let mut mem_d = Cursor::new(raw_payload);
+        let mut mem_d = io::Cursor::new(raw_payload);
         let payload = match &cmd.0[..] {
             "version" => NetworkMessage::Version(Decodable::consensus_decode(&mut mem_d)?),
             "verack"  => NetworkMessage::Verack,

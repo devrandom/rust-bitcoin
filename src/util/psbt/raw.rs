@@ -17,8 +17,12 @@
 //! Raw PSBT key-value pairs as defined at
 //! <https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki>.
 
-use std::{fmt, io};
 
+use Vec;
+use Write;
+use core::fmt;
+
+use io;
 use consensus::encode::{self, ReadExt, WriteExt, Decodable, Encodable, VarInt, serialize, deserialize, MAX_VEC_SIZE};
 use hashes::hex;
 use util::psbt::Error;
@@ -103,7 +107,7 @@ impl Decodable for Key {
 }
 
 impl Encodable for Key {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -121,7 +125,7 @@ impl Encodable for Key {
 }
 
 impl Encodable for Pair {
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
@@ -140,7 +144,7 @@ impl Decodable for Pair {
 }
 
 impl<Subtype> Encodable for ProprietaryKey<Subtype> where Subtype: Copy + From<u8> + Into<u8> {
-    fn consensus_encode<W: io::Write>(&self, mut e: W) -> Result<usize, io::Error> {
+    fn consensus_encode<W: Write>(&self, mut e: W) -> Result<usize, io::Error> {
         let mut len = self.prefix.consensus_encode(&mut e)? + 1;
         e.emit_u8(self.subtype.into())?;
         len += e.write(&self.key)?;
@@ -154,6 +158,7 @@ impl<Subtype> Decodable for ProprietaryKey<Subtype> where Subtype: Copy + From<u
         let mut key = vec![];
         let subtype = Subtype::from(d.read_u8()?);
         d.read_to_end(&mut key)?;
+        key.push(0);
 
         Ok(ProprietaryKey {
             prefix,

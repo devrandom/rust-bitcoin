@@ -37,8 +37,11 @@
 //! assert_eq!(&bytes[..], &[0xF9, 0xBE, 0xB4, 0xD9]);
 //! ```
 
-use std::{fmt, io, ops};
 
+use core::{fmt, ops, convert::From};
+use Write;
+
+use io;
 use consensus::encode::{self, Encodable, Decodable};
 
 /// Version of the protocol as appearing in network message headers
@@ -273,7 +276,7 @@ impl ops::BitXorAssign for ServiceFlags {
 
 impl Encodable for ServiceFlags {
     #[inline]
-    fn consensus_encode<S: io::Write>(
+    fn consensus_encode<S: Write>(
         &self,
         mut s: S,
     ) -> Result<usize, io::Error> {
