@@ -13,13 +13,13 @@
 //
 //! no_std polyfill 
 
-#[cfg(feature = "bare-io")]
+#[cfg(feature = "no-std")]
 pub use bare_io::*;
 
 #[cfg(feature = "std")]
 pub use std::io::*;
 
-#[cfg(feature = "bare-io")]
+#[cfg(feature = "no-std")]
 /// A simple Write-like trait to be used for consensus encoding in a no_std environment
 // This eliminates the need to change the bitcoin_hashes crate, and can be removed
 // if that crate adds bare-io support

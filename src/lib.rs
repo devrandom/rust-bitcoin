@@ -40,6 +40,9 @@
 #![deny(unused_must_use)]
 #![deny(broken_intra_doc_links)]
 
+#[cfg(any(all(feature = "std", feature = "no-std"), not(any(feature = "std", feature = "no-std"))))]
+compile_error!("exactly one of std and no-std must be enabled");
+
 #[cfg(all(not(feature = "std"), not(test)))]
 #[macro_use]
 pub extern crate alloc;
@@ -65,9 +68,10 @@ use std::collections::{BTreeMap, btree_map};
 #[macro_use] pub extern crate bitcoin_hashes as hashes;
 pub extern crate secp256k1;
 pub extern crate bech32;
-pub extern crate hashbrown;
 
-#[cfg(feature = "bare-io")] pub extern crate bare_io;
+#[cfg(feature = "no-std")] pub extern crate hashbrown;
+
+#[cfg(feature = "no-std")] pub extern crate bare_io;
 #[cfg(feature = "base64")] pub extern crate base64;
 
 #[cfg(feature="bitcoinconsensus")] extern crate bitcoinconsensus;
@@ -122,12 +126,16 @@ pub use util::ecdsa::PrivateKey;
 #[deprecated(since = "0.26.1", note = "Please use `ecdsa::PublicKey` instead")]
 pub use util::ecdsa::PublicKey;
 
-#[cfg(feature = "bare-io")]
+#[cfg(feature = "no-std")]
 pub use io::encode::EncodingWrite as Write;
 
 #[cfg(any(feature = "std"))]
 pub use io::Write;
 
+#[cfg(any(feature = "std"))]
+use std::collections::HashSet;
+
+#[cfg(any(feature = "no-std"))]
 use hashbrown::HashSet;
 
 #[cfg(all(test, feature = "unstable"))] use tests::EmptyWrite;

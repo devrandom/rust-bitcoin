@@ -20,8 +20,8 @@ use {Vec, String};
 
 use hashes::{sha256d, Hash, HashEngine};
 
-#[cfg(feature = "bare-io")] use Write;
-#[cfg(feature = "bare-io")] use hashes::sha256;
+#[cfg(feature = "no-std")] use Write;
+#[cfg(feature = "no-std")] use hashes::sha256;
 
 use blockdata::opcodes;
 use consensus::{encode, Encodable};
@@ -265,7 +265,7 @@ impl ToHex for [u8] {
     }
 }
 
-#[cfg(feature = "bare-io")]
+#[cfg(feature = "no-std")]
 impl Write for sha256::HashEngine {
     fn flush(&mut self) -> crate::io::Result<()> { Ok(()) }
 
