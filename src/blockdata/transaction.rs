@@ -771,8 +771,6 @@ mod tests {
 
     use hash_types::*;
     use SigHashType;
-    #[cfg(feature="bitcoinconsensus")]
-    use std::collections::HashMap;
 
     #[test]
     fn test_outpoint() {
@@ -1364,6 +1362,7 @@ mod tests {
     #[cfg(feature="bitcoinconsensus")]
     fn test_transaction_verify () {
         use hashes::hex::FromHex;
+        use std::collections::HashMap;
         use blockdata::script;
 
         // a random recent segwit transaction from blockchain using both old and segwit inputs

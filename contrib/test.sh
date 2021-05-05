@@ -27,19 +27,25 @@ then
     alias cargo="cargo +$TOOLCHAIN"
 fi
 
-# Test without any features first
-cargo test --verbose --no-default-features
+echo "********* Testing std *************"
+# Test without any features first.  std is required for tests
+cargo test --verbose --no-default-features --features="std"
+
+echo "********* Testing default *************"
 # Then test with the default features
 cargo test --verbose
+
+echo "********* Testing no-std build *************"
+# Test no_std
+cargo build --verbose --features="no-std" --no-default-features
+# TODO(devrandom can we run actual tests?
 
 # Test each feature
 for feature in ${FEATURES}
 do
+    echo "********* Testing "$feature" *************"
     cargo test --verbose --features="$feature"
 done
-
-# Test no_std
-cargo test --verbose --features="use-bare-io" --no-default-features
 
 # Fuzz if told to
 if [ "$DO_FUZZ" = true ]

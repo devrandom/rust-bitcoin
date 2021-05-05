@@ -157,7 +157,13 @@ impl<Subtype> Decodable for ProprietaryKey<Subtype> where Subtype: Copy + From<u
         let prefix = Vec::<u8>::consensus_decode(&mut d)?;
         let mut key = vec![];
         let subtype = Subtype::from(d.read_u8()?);
-        d.read_to_end(&mut key)?;
+        // bare-io doesn't have read_to_end
+        let mut buf = [0u8; 64];
+        loop {
+            let n = d.read(&mut buf).unwrap();
+            if n == 0 { break }
+            key.extend_from_slice(&buf[0..n])
+        }
         key.push(0);
 
         Ok(ProprietaryKey {

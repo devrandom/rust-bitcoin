@@ -105,8 +105,12 @@ impl PublicKey {
 
         reader.read_exact(&mut bytes[1..])?;
         Self::from_slice(bytes).map_err(|e|{
-            let err_string = format!("{}", e);
-            io::Error::new(io::ErrorKind::InvalidData, err_string.as_str())
+            // Need a static string for bare-io
+            let reason = match e {
+                Error::Base58(_) => "base58 error",
+                Error::Secp256k1(_) => "secp256k1 error",
+            };
+            io::Error::new(io::ErrorKind::InvalidData, reason)
         })
     }
 

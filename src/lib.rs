@@ -45,15 +45,19 @@
 pub extern crate alloc;
 #[cfg(feature = "std")] pub extern crate core; // for Rust 1.29
 
+#[allow(unused_imports)]
 #[cfg(all(not(feature = "std"), not(test)))]
 use alloc::{string::{String, ToString}, vec::Vec, boxed::Box, borrow::{Cow, ToOwned}, slice, rc, sync};
 
+#[allow(unused_imports)]
 #[cfg(any(feature = "std", test))]
 use std::{string::{String, ToString}, vec::Vec, boxed::Box, borrow::{Cow, ToOwned}, slice, rc, sync};
 
+#[allow(unused_imports)]
 #[cfg(all(not(feature = "std"), not(test)))]
 use alloc::collections::{BTreeMap, BTreeSet, btree_map};
 
+#[allow(unused_imports)]
 #[cfg(any(feature = "std", test))]
 use std::collections::{BTreeMap, btree_map};
 

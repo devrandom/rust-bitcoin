@@ -25,6 +25,8 @@ pub use std::io::*;
 // if that crate adds bare-io support
 pub mod encode {
 	use io;
+	use Vec;
+
 	/// A simplified Write trait for no_std consensus encoding
 	pub trait EncodingWrite {
 		/// x

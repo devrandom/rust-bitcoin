@@ -38,7 +38,6 @@ hashbrown = "0.11.2"
 git = "https://github.com/RCasatta/rust-bech32.git"
 branch = "no-std"
 default-features = false
-optional = true
 
 [dependencies.bare-io]
 git = "https://github.com/devrandom/bare-io.git"
