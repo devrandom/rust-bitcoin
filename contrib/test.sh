@@ -7,6 +7,7 @@ pin_common_verions() {
     cargo update -p cc --precise "1.0.41" --verbose
     cargo update -p serde --precise "1.0.98" --verbose
     cargo update -p serde_derive --precise "1.0.98" --verbose
+    cargo update -p memchr --precise "2.3.4" --verbose
 }
 
 # Pin `cc` for Rust 1.29
@@ -35,10 +36,13 @@ echo "********* Testing default *************"
 # Then test with the default features
 cargo test --verbose
 
+if [ "$DO_NO_STD" = true ]
+then
 echo "********* Testing no-std build *************"
-# Test no_std
-cargo build --verbose --features="no-std" --no-default-features
-# TODO(devrandom can we run actual tests?
+  # Test no_std
+  cargo build --verbose --features="no-std" --no-default-features
+  # TODO(devrandom) can we run actual tests, given that they require std themselves, so have incompatible imports?
+fi
 
 # Test each feature
 for feature in ${FEATURES}
