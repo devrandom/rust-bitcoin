@@ -12,7 +12,7 @@ readme = "README.md"
 
 
 [features]
-default = [ "std", "secp-recovery" ]
+default = [ "std", "secp-recovery", "merkleblock", "compact-block-filters" ]
 base64 = [ "base64-compat" ]
 fuzztarget = []
 unstable = []
@@ -24,6 +24,9 @@ secp-recovery = ["secp256k1/recovery"]
 # either std or no-std must be selected
 std = ["secp256k1/std", "bitcoin_hashes/std", "bech32/std"]
 no-std = ["bare-io", "hashbrown"]
+
+compact-block-filters = ["hashbrown"]
+merkleblock = ["hashbrown"]
 
 [dependencies]
 bitcoin_hashes = { version = "0.9.6", default-features = false }

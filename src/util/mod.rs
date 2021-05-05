@@ -26,11 +26,13 @@ pub mod bip32;
 pub mod bip143;
 pub mod contracthash;
 pub mod hash;
+#[cfg(feature = "merkleblock")]
 pub mod merkleblock;
 pub mod misc;
 pub mod psbt;
 pub mod taproot;
 pub mod uint;
+#[cfg(feature = "compact-block-filters")]
 pub mod bip158;
 
 pub(crate) mod endian;

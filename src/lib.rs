@@ -69,7 +69,8 @@ use std::collections::{BTreeMap, btree_map};
 pub extern crate secp256k1;
 pub extern crate bech32;
 
-#[cfg(feature = "no-std")] pub extern crate hashbrown;
+#[cfg(all(feature = "no-std", feature = "hashbrown", any(feature = "merkleblock", feature = "compact-block-filters")))]
+pub extern crate hashbrown;
 
 #[cfg(feature = "no-std")] pub extern crate bare_io;
 #[cfg(feature = "base64")] pub extern crate base64;
@@ -117,6 +118,7 @@ pub use util::address::AddressType;
 pub use util::amount::Amount;
 pub use util::amount::Denomination;
 pub use util::amount::SignedAmount;
+#[cfg(feature = "merkleblock")]
 pub use util::merkleblock::MerkleBlock;
 
 pub use util::ecdsa;
@@ -135,7 +137,7 @@ pub use io::Write;
 #[cfg(any(feature = "std"))]
 use std::collections::HashSet;
 
-#[cfg(any(feature = "no-std"))]
+#[cfg(all(feature = "no-std", feature = "hashbrown", any(feature = "merkleblock", feature = "compact-block-filters")))]
 use hashbrown::HashSet;
 
 #[cfg(all(test, feature = "unstable"))] use tests::EmptyWrite;
