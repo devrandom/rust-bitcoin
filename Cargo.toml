@@ -38,8 +38,7 @@ serde = { version = "1", features = [ "derive" ], optional = true }
 hashbrown = { version = "0.11.2", optional = true }
 
 [dependencies.bech32]
-git = "https://github.com/RCasatta/rust-bech32.git"
-branch = "no-std"
+git = "https://github.com/rust-bitcoin/rust-bech32.git"
 default-features = false
 
 [dependencies.bare-io]
