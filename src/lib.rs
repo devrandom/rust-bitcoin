@@ -134,6 +134,7 @@ pub use io::encode::EncodingWrite as Write;
 #[cfg(any(feature = "std"))]
 pub use io::Write;
 
+#[allow(unused_imports)]
 #[cfg(any(feature = "std"))]
 use std::collections::HashSet;
 
