@@ -145,8 +145,8 @@ use hashbrown::HashSet;
 
 #[cfg(all(test, feature = "unstable"))]
 mod tests {
+    use core::fmt::Arguments;
     use io::{IoSlice, Result, Write};
-    use std::fmt::Arguments;
 
     #[derive(Default, Clone, Debug, PartialEq, Eq)]
     pub struct EmptyWrite;

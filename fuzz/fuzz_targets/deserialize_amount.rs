@@ -1,3 +1,4 @@
+extern crate core;
 extern crate bitcoin;
 use core::str::FromStr;
 fn do_test(data: &[u8]) {

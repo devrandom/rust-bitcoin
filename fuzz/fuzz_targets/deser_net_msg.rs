@@ -1,3 +1,4 @@
+extern crate core;
 extern crate bitcoin;
 
 fn do_test(data: &[u8]) {

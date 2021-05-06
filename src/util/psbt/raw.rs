@@ -164,7 +164,6 @@ impl<Subtype> Decodable for ProprietaryKey<Subtype> where Subtype: Copy + From<u
             if n == 0 { break }
             key.extend_from_slice(&buf[0..n])
         }
-        key.push(0);
 
         Ok(ProprietaryKey {
             prefix,

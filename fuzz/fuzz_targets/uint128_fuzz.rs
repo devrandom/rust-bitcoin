@@ -1,3 +1,4 @@
+extern crate core;
 extern crate bitcoin;
 use core::str::FromStr;
 use core::convert::Into;

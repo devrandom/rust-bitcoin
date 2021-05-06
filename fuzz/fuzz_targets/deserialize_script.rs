@@ -1,3 +1,4 @@
+extern crate core;
 extern crate bitcoin;
 
 use bitcoin::util::address::Address;

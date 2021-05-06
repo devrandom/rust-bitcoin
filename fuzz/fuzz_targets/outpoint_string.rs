@@ -1,4 +1,4 @@
-
+extern crate core;
 extern crate bitcoin;
 
 use bitcoin::blockdata::transaction::OutPoint;
