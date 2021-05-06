@@ -7,13 +7,13 @@ pin_common_verions() {
     cargo update -p cc --precise "1.0.41" --verbose
     cargo update -p serde --precise "1.0.98" --verbose
     cargo update -p serde_derive --precise "1.0.98" --verbose
-    cargo update -p memchr --precise "2.3.4" --verbose
+    cargo update -p byteorder --precise "1.3.4"
 }
 
 # Pin `cc` for Rust 1.29
 if [ -n "$PIN_VERSIONS" ]; then
     pin_common_verions
-    cargo update -p byteorder --precise "1.3.4"
+    cargo update -p memchr --precise "2.3.4" --verbose
 fi
 
 if [ "$DO_COV" = true ]
