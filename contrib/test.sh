@@ -13,7 +13,6 @@ pin_common_verions() {
 # Pin `cc` for Rust 1.29
 if [ -n "$PIN_VERSIONS" ]; then
     pin_common_verions
-    cargo update -p memchr --precise "2.3.4" --verbose
 fi
 
 if [ "$DO_COV" = true ]

@@ -72,7 +72,6 @@ pub extern crate bech32;
 #[cfg(all(feature = "no-std", feature = "hashbrown", any(feature = "merkleblock", feature = "compact-block-filters")))]
 pub extern crate hashbrown;
 
-#[cfg(feature = "no-std")] pub extern crate bare_io;
 #[cfg(feature = "base64")] pub extern crate base64;
 
 #[cfg(feature="bitcoinconsensus")] extern crate bitcoinconsensus;
@@ -128,10 +127,6 @@ pub use util::ecdsa::PrivateKey;
 #[deprecated(since = "0.26.1", note = "Please use `ecdsa::PublicKey` instead")]
 pub use util::ecdsa::PublicKey;
 
-#[cfg(feature = "no-std")]
-pub use io::encode::EncodingWrite as Write;
-
-#[cfg(any(feature = "std"))]
 pub use io::Write;
 
 #[allow(unused_imports)]

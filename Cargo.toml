@@ -23,7 +23,7 @@ secp-recovery = ["secp256k1/recovery"]
 
 # either std or no-std must be selected
 std = ["secp256k1/std", "bitcoin_hashes/std", "bech32/std"]
-no-std = ["bare-io", "hashbrown"]
+no-std = ["hashbrown"]
 
 compact-block-filters = ["hashbrown"]
 merkleblock = ["hashbrown"]
@@ -40,12 +40,6 @@ hashbrown = { version = "0.1.8", optional = true }
 [dependencies.bech32]
 git = "https://github.com/rust-bitcoin/rust-bech32.git"
 default-features = false
-
-[dependencies.bare-io]
-git = "https://github.com/devrandom/bare-io.git"
-branch = "ancient"
-features = ["alloc", "ancient"]
-optional = true
 
 [dev-dependencies]
 serde_json = "<1.0.45"
