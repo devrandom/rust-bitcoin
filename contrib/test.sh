@@ -2,6 +2,12 @@
 
 FEATURES="base64 bitcoinconsensus use-serde rand"
 
+# Use toolchain if explicitly specified
+if [ -n "$TOOLCHAIN" ]
+then
+    alias cargo="cargo +$TOOLCHAIN"
+fi
+
 pin_common_verions() {
     cargo generate-lockfile --verbose
     cargo update -p cc --precise "1.0.41" --verbose
@@ -11,7 +17,7 @@ pin_common_verions() {
 }
 
 # Pin `cc` for Rust 1.29
-if [ -n "$PIN_VERSIONS" ]; then
+if [ "$PIN_VERSIONS" = true ]; then
     pin_common_verions
 fi
 
@@ -20,12 +26,6 @@ then
     export RUSTFLAGS="-C link-dead-code"
 fi
 
-
-# Use toolchain if explicitly specified
-if [ -n "$TOOLCHAIN" ]
-then
-    alias cargo="cargo +$TOOLCHAIN"
-fi
 
 echo "********* Testing std *************"
 # Test without any features first.  std is required for tests
@@ -38,9 +38,10 @@ cargo test --verbose
 if [ "$DO_NO_STD" = true ]
 then
 echo "********* Testing no-std build *************"
+  # Build no_std, to make sure that cfg(test) doesn't hide any issues
+  cargo build --verbose --no-default-features --features="no-std"
   # Test no_std
-  cargo build --verbose --features="no-std" --no-default-features
-  # TODO(devrandom) can we run actual tests, given that they require std themselves, so have incompatible imports?
+  cargo test --verbose --features="no-std" --no-default-features
 fi
 
 # Test each feature
@@ -67,7 +68,7 @@ then
 fi
 
 # Use as dependency if told to
-if [ -n "$AS_DEPENDENCY" ]
+if [ "$AS_DEPENDENCY" = true ]
 then
     cargo new dep_test
     cd dep_test

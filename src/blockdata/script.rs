@@ -36,7 +36,8 @@ use hash_types::{PubkeyHash, WPubkeyHash, ScriptHash, WScriptHash};
 use blockdata::opcodes;
 use consensus::{encode, Decodable, Encodable};
 use hashes::Hash;
-#[cfg(feature = "std")] use hashes::hex;
+#[cfg(any(feature = "std", test))]
+use hashes::hex;
 #[cfg(feature="bitcoinconsensus")] use bitcoinconsensus;
 #[cfg(feature="bitcoinconsensus")] use core::convert::From;
 #[cfg(feature="bitcoinconsensus")] use OutPoint;
@@ -85,7 +86,7 @@ impl fmt::UpperHex for Script {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", test))]
 impl hex::FromHex for Script {
     fn from_byte_iter<I>(iter: I) -> Result<Self, hex::Error>
         where I: Iterator<Item=Result<u8, hex::Error>> +
@@ -96,8 +97,8 @@ impl hex::FromHex for Script {
     }
 }
 
-#[cfg(feature = "std")]
-impl ::std::str::FromStr for Script {
+#[cfg(any(feature = "std", test))]
+impl ::core::str::FromStr for Script {
     type Err = hex::Error;
     fn from_str(s: &str) -> Result<Self, hex::Error> {
         hex::FromHex::from_hex(s)

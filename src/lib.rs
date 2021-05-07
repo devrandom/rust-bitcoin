@@ -43,10 +43,11 @@
 #[cfg(any(all(feature = "std", feature = "no-std"), not(any(feature = "std", feature = "no-std"))))]
 compile_error!("exactly one of std and no-std must be enabled");
 
-#[cfg(all(not(feature = "std"), not(test)))]
+#[cfg(feature = "no-std")]
 #[macro_use]
 pub extern crate alloc;
-#[cfg(feature = "std")] pub extern crate core; // for Rust 1.29
+#[cfg(any(feature = "std", test))]
+pub extern crate core; // for Rust 1.29 and no-std tests
 
 #[allow(unused_imports)]
 #[cfg(all(not(feature = "std"), not(test)))]
