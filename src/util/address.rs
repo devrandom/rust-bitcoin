@@ -36,7 +36,7 @@
 use core::str::FromStr;
 // FIXME: Debug was giving a compiler error without std feature. Why? Is Error not used?
 use core::fmt;
-use {ToString, Vec};
+use {String, ToString, Vec};
 #[cfg(feature = "std")] use std::error;
 
 use bech32;

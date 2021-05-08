@@ -358,4 +358,18 @@ pub mod nano_io {
 		}
 	}
 
+	pub struct Sink(());
+
+	impl Write for Sink {
+		fn flush(&mut self) -> io::Result<()> { Ok(()) }
+
+		#[inline]
+		fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+			Ok(buf.len())
+		}
+	}
+
+	pub fn sink() -> Sink {
+		Sink(())
+	}
 }

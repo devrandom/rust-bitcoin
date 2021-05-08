@@ -427,11 +427,11 @@ impl Script {
         } else if self.is_witness_program() {
             32 + 4 + 1 + (107 / 4) + 4 + // The spend cost copied from Core
             8 + // The serialized size of the TxOut's amount field
-            self.consensus_encode(&mut ::std::io::sink()).unwrap() as u64 // The serialized size of this script_pubkey
+            self.consensus_encode(&mut io::sink()).unwrap() as u64 // The serialized size of this script_pubkey
         } else {
             32 + 4 + 1 + 107 + 4 + // The spend cost copied from Core
             8 + // The serialized size of the TxOut's amount field
-            self.consensus_encode(&mut ::std::io::sink()).unwrap() as u64 // The serialized size of this script_pubkey
+            self.consensus_encode(&mut io::sink()).unwrap() as u64 // The serialized size of this script_pubkey
         }
     }
 
