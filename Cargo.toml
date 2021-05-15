@@ -23,7 +23,7 @@ secp-recovery = ["secp256k1/recovery"]
 
 # either std or no-std must be selected
 std = ["secp256k1/std", "bitcoin_hashes/std", "bech32/std"]
-no-std = ["hashbrown"]
+no-std = ["hashbrown/nightly"]
 
 compact-block-filters = ["hashbrown"]
 merkleblock = ["hashbrown"]
