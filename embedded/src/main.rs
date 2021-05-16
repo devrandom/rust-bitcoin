@@ -25,7 +25,7 @@ use cortex_m_semihosting::{debug, hprintln};
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
-const HEAP_SIZE: usize = 1024 * 512; // in bytes
+const HEAP_SIZE: usize = 1024 * 32; // in bytes
 
 #[entry]
 fn main() -> ! {
