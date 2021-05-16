@@ -39,9 +39,11 @@ if [ "$DO_NO_STD" = true ]
 then
 echo "********* Testing no-std build *************"
   # Build no_std, to make sure that cfg(test) doesn't hide any issues
-  cargo build --verbose --no-default-features --features="no-std"
+  cargo build --verbose --features="no-std" --no-default-features
   # Test no_std
   cargo test --verbose --features="no-std" --no-default-features
+
+  cargo build --verbose --features="no-std,secp-recovery" --no-default-features
 fi
 
 # Test each feature
