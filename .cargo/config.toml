@@ -1,0 +1,11 @@
+[build]
+#target = "thumbv7em-none-eabi"
+
+[target.thumbv7em-none-eabi]
+#runner = "probe-run --chip STM32L476RGTx"
+runner = "gdb-multiarch -q -x openocd.gdb"
+#linker = "arm-none-eabi-ld"
+rustflags = [
+    "-C", "link-arg=-Tlink.x",
+]
+

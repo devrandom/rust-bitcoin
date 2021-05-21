@@ -5,6 +5,7 @@
 
 extern crate alloc;
 extern crate bitcoin;
+extern crate stm32l4;
 
 use alloc::string::ToString;
 use alloc::vec;
@@ -20,6 +21,8 @@ use bitcoin::secp256k1::Secp256k1;
 use cortex_m::asm;
 use cortex_m_rt::entry;
 use cortex_m_semihosting::{debug, hprintln};
+use bitcoin::util::bip32::{ExtendedPrivKey, DerivationPath, ExtendedPubKey};
+use core::str::FromStr;
 
 // this is the allocator the application will use
 #[global_allocator]
@@ -50,6 +53,20 @@ fn main() -> ! {
     hprintln!("Address: {}", address).unwrap();
 
     assert_eq!(address.to_string(), "bc1qpx9t9pzzl4qsydmhyt6ctrxxjd4ep549np9993".to_string());
+
+    let network = pk.network;
+    let seed = pk.to_bytes();
+    let root = ExtendedPrivKey::new_master(network, &seed).unwrap();
+    hprintln!("Root key: {}", root).unwrap();
+
+    // derive child xpub
+    let path = DerivationPath::from_str("m/84h/0h/0h").unwrap();
+    let child = root.derive_priv(&secp, &path).unwrap();
+    hprintln!("Child at {}: {}", path, child).unwrap();
+    let xpub = ExtendedPubKey::from_private(&secp, &child);
+    hprintln!("Public key at {}: {}", path, xpub).unwrap();
+
+
     // exit QEMU
     // NOTE do not run this on hardware; it can corrupt OpenOCD state
     debug::exit(debug::EXIT_SUCCESS);
