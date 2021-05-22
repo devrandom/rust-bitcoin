@@ -10,16 +10,16 @@ cortex-m = "0.7.2"
 cortex-m-rt = "0.6.14"
 cortex-m-semihosting = "0.3.7"
 alloc-cortex-m = "0.4.1"
-panic-halt = "0.2.0"
 bitcoin = { path="../", default-features = false, features = ["no-std", "secp-lowmemory"] }
 
-[dependencies.stm32l4]
+[dependencies.stm32l4xx-hal]
+version = "0.6.0"
 features = ["stm32l4x6", "rt"]
-version = "0.13.0"
 
 [patch.crates-io]
 # rust-Secp256k1 PR 299, static ECMULT, greatly reducing memory. This patch should be dropped once that is merged.
-secp256k1 = { git = 'https://github.com/devrandom/rust-secp256k1', rev = '439d18863d9c6b566e2fbcc94352f922153f286c' }
+# also, #289
+secp256k1 = { git = 'https://github.com/devrandom/rust-secp256k1', rev = '4658beb1c998f3e3c4b73333afa6f62fa2bfb715' }
 
 [[bin]]
 name = "embedded"
