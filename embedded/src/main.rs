@@ -24,24 +24,18 @@ use cortex_m_rt::entry;
 use cortex_m_semihosting::{debug, hprintln};
 use bitcoin::util::bip32::{ExtendedPrivKey, DerivationPath, ExtendedPubKey};
 use core::str::FromStr;
-use hal::rtc::{Rtc, RtcConfig, RtcClockSource};
-use hal::rcc::{RccExt, CrystalBypass, ClockSecuritySystem};
+use hal::rcc::RccExt;
 use hal::flash::FlashExt;
 use hal::pwr::PwrExt;
 use hal::delay::Delay;
-use hal::datetime::{Time, U32Ext, Date};
 use hal::prelude::*;
+use stm32l4xx_hal::time::{MonoTimer, Instant};
 
 // this is the allocator the application will use
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 const HEAP_SIZE: usize = 1024 * 32; // in bytes
-
-fn get_millis(rtc: &Rtc) -> u32 {
-    let (_date, time) = rtc.get_date_time();
-    time.micros / 1000 + time.seconds * 1000 + time.minutes * 60 * 1000
-}
 
 #[entry]
 fn main() -> ! {
@@ -51,35 +45,19 @@ fn main() -> ! {
     let mut flash = dp.FLASH.constrain();
     let mut rcc = dp.RCC.constrain();
     let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
+    let dwt = cp.DWT;
 
-    // Try a different clock configuration
-    let clocks = rcc
-        .cfgr
-        .lse(CrystalBypass::Disable, ClockSecuritySystem::Disable)
-        .freeze(&mut flash.acr, &mut pwr);
+    let clocks = rcc.cfgr.freeze(&mut flash.acr, &mut pwr);
 
-    let mut timer = Delay::new(cp.SYST, clocks);
-
-    let mut rtc = Rtc::rtc(
-        dp.RTC,
-        &mut rcc.apb1r1,
-        &mut rcc.bdcr,
-        &mut pwr.cr1,
-        RtcConfig::default().clock_config(RtcClockSource::LSE),
-    );
-
-    let time = Time::new(0.hours(), 0.minutes(), 0.seconds(), 0.micros(), false);
-    let date = Date::new(1.day(), 1.date(), 1.month(), 2018.year());
-
-    rtc.set_date_time(date, time);
+    let timer = MonoTimer::new(dwt, clocks);
+    let mut delay = Delay::new(cp.SYST, clocks);
 
     // Let clock settle ?!
-    timer.delay_ms(1000_u32);
+    delay.delay_ms(1000_u32);
 
-    let start = get_millis(&rtc);
-    timer.delay_ms(666_u32);
-    let end = get_millis(&rtc);
-    hprintln!("took {} ms", end - start).unwrap();
+    let start = timer.now();
+    delay.delay_ms(123_u32);
+    hprintln!("a 123 ms task took {} ms", elapsed_ms(&timer, start)).unwrap();
 
     hprintln!("heap size {}", HEAP_SIZE).unwrap();
 
@@ -99,7 +77,7 @@ fn main() -> ! {
     // Derive address
     let pubkey = pk.public_key(&secp);
 
-    bench_signing(&mut rtc, &pk, &secp, &pubkey);
+    bench_signing(&timer, &pk, &secp, &pubkey);
 
     test_address(&pubkey);
 
@@ -112,22 +90,24 @@ fn main() -> ! {
     loop {}
 }
 
-fn bench_signing(rtc: &mut Rtc, pk: &PrivateKey, secp: &Secp256k1<AllPreallocated>, pubkey: &PublicKey) {
+fn elapsed_ms(timer: &MonoTimer, start: Instant) -> u64 {
+    (start.elapsed() as u64) * 1000 / (timer.frequency().0 as u64)
+}
+
+fn bench_signing(timer: &MonoTimer, pk: &PrivateKey, secp: &Secp256k1<AllPreallocated>, pubkey: &PublicKey) {
     let msg = Message::from_slice(&[0x33; 32]).unwrap();
     let sig = secp.sign(&msg, &pk.key);
-    let start = get_millis(&rtc);
+    let start = timer.now();
     for _ in 0..100 {
         secp.sign(&msg, &pk.key);
     }
-    let end = get_millis(&rtc);
-    hprintln!("signing took {} ms", end - start).unwrap();
+    hprintln!("signing took {} ms", elapsed_ms(timer, start)).unwrap();
 
-    let start = get_millis(&rtc);
+    let start = timer.now();
     for _ in 0..100 {
         secp.verify(&msg, &sig, &pubkey.key).unwrap();
     }
-    let end = get_millis(&rtc);
-    hprintln!("verification took {} ms", end - start).unwrap();
+    hprintln!("verification took {} ms", elapsed_ms(&timer, start)).unwrap();
 }
 
 fn test_keys(pk: PrivateKey, secp: &Secp256k1<AllPreallocated>) {
